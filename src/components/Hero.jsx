@@ -1,9 +1,9 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Sphere, MeshDistortMaterial, Float, Stars } from '@react-three/drei';
-import Dragon from './Dragon';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import Phoenix from './Phoenix';
 import { motion } from 'framer-motion';
-import { useRef } from 'react';
-
+import { useRef, useState, Suspense } from 'react';
 function AnimatedSphere() {
     const sphereRef = useRef();
 
@@ -47,12 +47,24 @@ export default function Hero() {
         <div className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
             {/* 3D Background */}
             <div className="absolute inset-0 z-0">
-                <Canvas camera={{ position: [0, 0, 5] }}>
-                    <ambientLight intensity={0.5} />
-                    <directionalLight position={[2, 5, 2]} intensity={1} />
+                <Canvas camera={{ position: [0, 0, 15] }}>
+                    <ambientLight intensity={1} />
+                    <directionalLight position={[5, 10, 5]} intensity={3} color="#ffffff" />
+                    <pointLight position={[-5, -5, -5]} intensity={2} color="#ff0000" />
+
                     <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-                    <Dragon />
+
+                    {/* The new Phoenix Model with Suspense for async loading */}
+                    <Suspense fallback={null}>
+                        <Phoenix position={[0, -2, 0]} scale={0.03} />
+                    </Suspense>
+
                     <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+
+                    {/* Post Processing for the "Ultra Level" fire glow */}
+                    <EffectComposer>
+                        <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} />
+                    </EffectComposer>
                 </Canvas>
             </div>
 
@@ -67,7 +79,7 @@ export default function Hero() {
                     <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-white mb-2 mix-blend-difference">
                         {splitText("CREATIVE")}
                     </h1>
-                    <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-blue-500 [-webkit-text-stroke:2px_rgba(255,255,255,0.2)] md:[-webkit-text-stroke:3px_rgba(255,255,255,0.2)]"
+                    <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-purple-600 [-webkit-text-stroke:2px_rgba(255,255,255,0.1)] md:[-webkit-text-stroke:3px_rgba(255,255,255,0.1)] fall-back-text" style={{ textShadow: "0 0 40px rgba(255,100,0,0.4)" }}
                     >
                         {splitText("DEVELOPER")}
                     </h1>

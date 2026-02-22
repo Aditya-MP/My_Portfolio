@@ -1,9 +1,8 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars, AdaptiveDpr, AdaptiveEvents, Environment } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
+import { OrbitControls, Stars, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
 import Phoenix from './Phoenix';
 import { motion } from 'framer-motion';
-import { Suspense } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 const splitText = (text) => {
     return text.split("").map((char, index) => (
@@ -19,42 +18,63 @@ const splitText = (text) => {
     ));
 };
 
-export default function Hero() {
+// Loading spinner shown while Phoenix model downloads
+function LoadingSpinner() {
     return (
-        <div className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+            <div className="flex flex-col items-center gap-3">
+                <div className="w-10 h-10 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
+                <span className="text-zinc-500 text-sm font-medium">Loading 3D Model...</span>
+            </div>
+        </div>
+    );
+}
+
+export default function Hero() {
+    const heroRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(true);
+    const [modelLoaded, setModelLoaded] = useState(false);
+
+    // Pause Canvas rendering when hero is scrolled off-screen
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.1 }
+        );
+        if (heroRef.current) observer.observe(heroRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <div ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
             {/* 3D Background */}
             <div className="absolute inset-0 z-0">
+                {!modelLoaded && <LoadingSpinner />}
                 <Canvas
                     camera={{ position: [0, 2, 25], fov: 50 }}
-                    dpr={[1, 2]}
+                    dpr={[1, 1.5]}
                     performance={{ min: 0.5 }}
-                    gl={{ antialias: true, powerPreference: 'high-performance' }}
+                    gl={{ antialias: false, powerPreference: 'high-performance' }}
+                    frameloop={isVisible ? 'always' : 'never'}
                 >
                     <AdaptiveDpr pixelated />
                     <AdaptiveEvents />
 
                     <ambientLight intensity={1.2} />
                     <directionalLight position={[5, 10, 5]} intensity={2.5} color="#ffffff" />
-                    <directionalLight position={[-5, 5, -5]} intensity={1.5} color="#ffaa33" />
-                    <pointLight position={[-5, -5, -5]} intensity={2} color="#ff3300" />
-                    <pointLight position={[3, 3, 3]} intensity={2} color="#ffaa33" />
-                    <pointLight position={[0, 5, 0]} intensity={1.5} color="#ffffff" />
+                    <pointLight position={[-5, -5, -5]} intensity={1.5} color="#ff3300" />
 
-                    {/* Environment map for reflections/shiny surface */}
-                    <Environment preset="sunset" />
-
-                    <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+                    <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
 
                     <Suspense fallback={null}>
-                        <Phoenix position={[0, -1, 0]} scale={0.02} />
+                        <Phoenix
+                            position={[0, -1, 0]}
+                            scale={0.02}
+                            onLoaded={() => setModelLoaded(true)}
+                        />
                     </Suspense>
 
                     <OrbitControls enableZoom={true} enablePan={false} autoRotate autoRotateSpeed={0.5} minDistance={10} maxDistance={50} />
-
-                    {/* Bloom for the shining/glowing fire effect */}
-                    <EffectComposer disableNormalPass>
-                        <Bloom luminanceThreshold={1.0} intensity={1.0} levels={4} />
-                    </EffectComposer>
                 </Canvas>
             </div>
 

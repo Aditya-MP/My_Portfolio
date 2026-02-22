@@ -53,7 +53,7 @@ export default function Projects() {
                 <p className="text-zinc-400">Curated projects based on your preferences</p>
             </div>
 
-            <div className="relative w-full max-w-md md:max-w-4xl h-[600px] md:h-[450px] flex items-center justify-center">
+            <div className="relative w-full max-w-md md:max-w-4xl h-[520px] md:h-[450px] flex items-center justify-center">
                 <AnimatePresence initial={false} custom={direction} mode="popLayout">
                     <motion.div
                         key={currentIndex}
@@ -81,7 +81,7 @@ export default function Projects() {
                         <div className="w-full h-full bg-zinc-900 border border-zinc-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row hover:shadow-orange-500/10 transition-shadow duration-300">
 
                             {/* Visual Section (Image Imitation) */}
-                            <div className="h-1/2 md:h-full md:w-5/12 relative overflow-hidden bg-zinc-800 group">
+                            <div className="h-2/5 md:h-full md:w-5/12 relative overflow-hidden bg-zinc-800 group flex-shrink-0">
                                 {project.cover ? (
                                     <>
                                         <img
@@ -122,13 +122,13 @@ export default function Projects() {
                             </div>
 
                             {/* Content Section */}
-                            <div className="h-1/2 md:h-full md:w-7/12 p-6 md:p-8 flex flex-col justify-between bg-zinc-900 relative">
+                            <div className="h-3/5 md:h-full md:w-7/12 p-4 md:p-8 flex flex-col justify-between bg-zinc-900 relative overflow-y-auto">
                                 <button className="absolute top-6 right-6 p-2 rounded-full bg-zinc-800 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-colors">
                                     <Heart size={20} />
                                 </button>
 
                                 <div>
-                                    <h3 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
+                                    <h3 className="text-xl md:text-3xl font-bold text-white mb-1 leading-tight pr-10">
                                         {project.title}
                                     </h3>
                                     <div className="flex items-center gap-2 mb-4">
@@ -157,7 +157,7 @@ export default function Projects() {
                                     </div>
                                 </div>
 
-                                <div className="flex gap-3 mt-6 pt-6 border-t border-zinc-800">
+                                <div className="flex gap-3 mt-4 pt-4 border-t border-zinc-800">
                                     <a
                                         href={project.link}
                                         target="_blank"

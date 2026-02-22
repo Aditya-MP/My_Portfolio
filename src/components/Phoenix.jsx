@@ -3,11 +3,11 @@ import { useFBX, useAnimations } from '@react-three/drei';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation = [0, 0, 0] }) {
+export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation = [0, 0, 0], onLoaded }) {
     const group = useRef();
     const applied = useRef(false);
 
-    // Load textures FIRST (before FBX) so they're ready
+    // Load textures
     const [colorA, emissA, colorB, emissB] = useLoader(THREE.TextureLoader, [
         '/models/phoenix/Tex_Ride_FengHuang_01a_D_A.tga.png',
         '/models/phoenix/Tex_Ride_FengHuang_01a_E.tga.png',
@@ -15,7 +15,7 @@ export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation 
         '/models/phoenix/Tex_Ride_FengHuang_01b_E.tga.png',
     ]);
 
-    // Load the FBX model (do NOT clone — cloning breaks skinned meshes)
+    // Load the FBX model
     const fbx = useFBX('/models/phoenix/fly.fbx');
 
     // Setup animations
@@ -44,12 +44,14 @@ export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation 
                 side: THREE.DoubleSide,
                 roughness: 0.35,
                 metalness: 0.25,
-                envMapIntensity: 0.6,
             });
         });
 
         applied.current = true;
-    }, [fbx, colorA, emissA, colorB, emissB]);
+
+        // Notify parent that model is loaded and ready
+        if (onLoaded) onLoaded();
+    }, [fbx, colorA, emissA, colorB, emissB, onLoaded]);
 
     // Animation — separate effect so it always plays
     useEffect(() => {

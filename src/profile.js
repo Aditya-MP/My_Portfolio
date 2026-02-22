@@ -6,6 +6,7 @@ export const profile = {
   linkedin: "https://www.linkedin.com/in/aadithya-m-p/",
   github: "https://github.com/Aditya-MP",
   resume: "/resume.pdf",
+  imgUrl: "/profile_pic.jpg",
 
   about: `
 I am an AIML engineering graduate passionate about building intelligent applications, 
@@ -29,8 +30,9 @@ hackathons and love experimenting with emerging tech.
       title: "Agent Forces – AI Cardano Wallet Assistant",
       description: "Built an AI conversational assistant delivering wallet analytics, staking education, and actionable reward intelligence for Cardano users. Designed personalized portfolio insights covering ADA balance, UTXOs, delegation status, and stake pool performance metrics.",
       tech: ["Cardano", "Web3", "AI"],
-      link: "https://github.com/Aditya-MP/Agent-Force",
+      link: "https://effulgent-gelato-5b2e7d.netlify.app/",
       github: "https://github.com/Aditya-MP/Agent-Force",
+      cover: "/agent_forces_cover.jpg",
       year: "2025"
     },
     {
@@ -40,6 +42,7 @@ hackathons and love experimenting with emerging tech.
       tech: ["Java", "Spring Boot", "Computer Vision"],
       link: "https://github.com/Aditya-MP/Face-Detection-attendence-system-Java-Spring-boot-",
       github: "https://github.com/Aditya-MP/Face-Detection-attendence-system-Java-Spring-boot-",
+      cover: "/java_attendance_cover.jpg",
       year: "2025"
     },
     {
@@ -47,8 +50,9 @@ hackathons and love experimenting with emerging tech.
       title: "Chef-AI – GenAI Recipe Platform",
       description: "Architected a generative AI pipeline producing personalized meal plans based on dietary preferences and user constraints. Integrated secure authentication, cloud storage, and responsive UI, increasing user engagement by 40%.",
       tech: ["Next.js", "Gemini API", "Firebase"],
-      link: "https://github.com/Aditya-MP/Project-Chef-AI",
+      link: "https://chef-ai-a-recipe-generator.netlify.app/",
       github: "https://github.com/Aditya-MP/Project-Chef-AI",
+      cover: "/chef_ai_cover.jpg",
       year: "July 2025"
     },
     {
@@ -58,13 +62,24 @@ hackathons and love experimenting with emerging tech.
       tech: ["Python", "Flutter", "Vertex AI"],
       link: "https://kalakrithi-39f00.web.app",
       github: "https://github.com/Aditya-MP/kalakriti-_hosting",
+      cover: "/kalakriti_cover.jpg",
       year: "Sept 2025"
+    },
+    {
+      id: 5,
+      title: "Local Lens – AI-Powered Hyperlocal Discovery",
+      description: "Developed an AI-driven hyperlocal platform to optimize real-time location-based searches. Engineered a smart recommendation engine and interactive maps to seamlessly connect users with personalized nearby businesses and services.",
+      tech: ["React", "AI", "Geolocation", "Firebase"],
+      link: "https://locallens-a3b3f.web.app/",
+      github: "https://github.com/Aditya-MP/Locallens-AI-Powered-Hyperlocal-Discovery-Optimization.git",
+      cover: "/locallens_cover.jpg",
+      year: "2026"
     }
   ],
 
   experience: [
     {
-      role: "Full Stack Developer Intern",
+      role: "Java Full Stack Developer Intern",
       company: "TAP Academy",
       duration: "Jan 2025 – Present",
       tech: ["Java", "Spring Boot", "Hibernate", "MySQL", "React", "REST APIs"],

@@ -82,24 +82,40 @@ export default function Projects() {
 
                             {/* Visual Section (Image Imitation) */}
                             <div className="h-1/2 md:h-full md:w-5/12 relative overflow-hidden bg-zinc-800 group">
-                                {/* Dynamic Gradient Background based on index to simulate food images */}
-                                <div className={`absolute inset-0 bg-gradient-to-br ${currentIndex % 2 === 0 ? 'from-orange-500 to-red-600' : 'from-purple-600 to-blue-600'
-                                    } opacity-80 group-hover:scale-110 transition-transform duration-700`} />
+                                {project.cover ? (
+                                    <>
+                                        <img
+                                            src={project.cover}
+                                            alt={project.title}
+                                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors duration-700" />
+                                    </>
+                                ) : (
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${currentIndex % 2 === 0 ? 'from-orange-500 to-red-600' : 'from-purple-600 to-blue-600'
+                                        } opacity-80 group-hover:scale-110 transition-transform duration-700`} />
+                                )}
 
-                                <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
-                                    <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 text-4xl shadow-lg">
-                                        {currentIndex % 2 === 0 ? '🔥' : '🚀'}
+                                {/* Centered Placeholder (Only if no image) */}
+                                {!project.cover && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                                        <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center mb-4 text-4xl shadow-lg">
+                                            {currentIndex % 2 === 0 ? '🔥' : '🚀'}
+                                        </div>
                                     </div>
-                                    <span className="text-white font-bold text-xl drop-shadow-md">
-                                        {project.year}
-                                    </span>
-                                </div>
+                                )}
 
-                                {/* Badge */}
+                                {/* Badge - Top Left */}
                                 <div className="absolute top-4 left-4 bg-white/90 text-black text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1 uppercase tracking-wide">
                                     <Star size={12} className="fill-orange-500 text-orange-500" /> Top Pick
                                 </div>
 
+                                {/* Year Badge - Top Right */}
+                                <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-lg flex items-center gap-1 shadow-sm">
+                                    {project.year}
+                                </div>
+
+                                {/* Tech Badge - Bottom Right */}
                                 <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm text-white text-xs font-bold px-3 py-1 rounded-lg flex items-center gap-1">
                                     <Clock size={12} /> {project.tech.length} Technologies
                                 </div>

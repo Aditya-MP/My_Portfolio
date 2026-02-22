@@ -1,6 +1,7 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { profile } from '../profile';
-import { Network, Code2, Cpu, Globe, GraduationCap, Briefcase } from 'lucide-react';
+import { Network, Code2, Cpu, Globe, GraduationCap, Briefcase, X } from 'lucide-react';
 
 const categoryIcons = {
     programming: <Code2 size={16} />,
@@ -10,8 +11,10 @@ const categoryIcons = {
 };
 
 export default function About() {
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start py-10 relative">
             {/* Left Column: Bio & Skills */}
             <motion.div
                 initial={{ opacity: 0, x: -20 }}
@@ -19,8 +22,17 @@ export default function About() {
                 viewport={{ once: true }}
             >
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center text-xl font-bold">
-                        👨‍💻
+                    <div
+                        onClick={() => profile.imgUrl && setIsProfileOpen(true)}
+                        className={`w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 p-[2px] overflow-hidden ${profile.imgUrl ? 'cursor-pointer hover:scale-110 active:scale-95 transition-transform' : ''}`}
+                    >
+                        <div className="w-full h-full rounded-full overflow-hidden bg-zinc-900">
+                            {profile.imgUrl ? (
+                                <img src={profile.imgUrl} alt={profile.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-2xl">👨‍💻</div>
+                            )}
+                        </div>
                     </div>
                     <div>
                         <h2 className="text-3xl font-bold text-white">Adithya M P</h2>
@@ -140,6 +152,39 @@ export default function About() {
                 </div>
 
             </div>
+            {/* Profile Image Modal */}
+            <AnimatePresence>
+                {isProfileOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsProfileOpen(false)}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 cursor-zoom-out"
+                    >
+                        <motion.div
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                            className="relative max-w-4xl max-h-[90vh] rounded-2xl overflow-hidden shadow-2xl border border-white/10 bg-zinc-900"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setIsProfileOpen(false)}
+                                className="absolute top-4 right-4 p-2 bg-black/50 text-white rounded-full hover:bg-red-500/80 transition-colors z-10 hidden md:block"
+                            >
+                                <X size={24} />
+                            </button>
+                            <img
+                                src={profile.imgUrl}
+                                alt={profile.name}
+                                className="w-full h-full object-contain max-h-[85vh]"
+                            />
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

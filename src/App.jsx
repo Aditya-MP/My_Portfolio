@@ -14,19 +14,19 @@ function App() {
       <main>
         <Hero />
 
-        <Section id="projects">
-          <Projects />
-        </Section>
-
         <Section id="about" className="bg-zinc-900/30">
           <About />
         </Section>
 
-        <Section id="achievements">
+        <Section id="projects">
+          <Projects />
+        </Section>
+
+        <Section id="achievements" className="bg-zinc-900/30">
           <Achievements />
         </Section>
 
-        <Section id="contact" className="bg-zinc-900/30">
+        <Section id="contact">
           <Contact />
         </Section>
       </main>

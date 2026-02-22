@@ -1,32 +1,9 @@
-import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Sphere, MeshDistortMaterial, Float, Stars } from '@react-three/drei';
+import { Canvas } from '@react-three/fiber';
+import { OrbitControls, Stars, AdaptiveDpr, AdaptiveEvents, Environment } from '@react-three/drei';
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import Phoenix from './Phoenix';
 import { motion } from 'framer-motion';
-import { useRef, useState, Suspense } from 'react';
-function AnimatedSphere() {
-    const sphereRef = useRef();
-
-    useFrame(({ clock }) => {
-        sphereRef.current.rotation.x = clock.getElapsedTime() * 0.2;
-        sphereRef.current.rotation.y = clock.getElapsedTime() * 0.3;
-    });
-
-    return (
-        <Float speed={2} rotationIntensity={1} floatIntensity={2}>
-            <Sphere ref={sphereRef} args={[1, 64, 64]} scale={2.5}>
-                <MeshDistortMaterial
-                    color="#7444ff"
-                    attach="material"
-                    distort={0.4}
-                    speed={2}
-                    roughness={0.2}
-                    metalness={0.8}
-                />
-            </Sphere>
-        </Float>
-    );
-}
+import { Suspense } from 'react';
 
 const splitText = (text) => {
     return text.split("").map((char, index) => (
@@ -47,23 +24,36 @@ export default function Hero() {
         <div className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
             {/* 3D Background */}
             <div className="absolute inset-0 z-0">
-                <Canvas camera={{ position: [0, 0, 15] }}>
-                    <ambientLight intensity={1} />
-                    <directionalLight position={[5, 10, 5]} intensity={3} color="#ffffff" />
-                    <pointLight position={[-5, -5, -5]} intensity={2} color="#ff0000" />
+                <Canvas
+                    camera={{ position: [0, 2, 25], fov: 50 }}
+                    dpr={[1, 2]}
+                    performance={{ min: 0.5 }}
+                    gl={{ antialias: true, powerPreference: 'high-performance' }}
+                >
+                    <AdaptiveDpr pixelated />
+                    <AdaptiveEvents />
 
-                    <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+                    <ambientLight intensity={1.2} />
+                    <directionalLight position={[5, 10, 5]} intensity={2.5} color="#ffffff" />
+                    <directionalLight position={[-5, 5, -5]} intensity={1.5} color="#ffaa33" />
+                    <pointLight position={[-5, -5, -5]} intensity={2} color="#ff3300" />
+                    <pointLight position={[3, 3, 3]} intensity={2} color="#ffaa33" />
+                    <pointLight position={[0, 5, 0]} intensity={1.5} color="#ffffff" />
 
-                    {/* The new Phoenix Model with Suspense for async loading */}
+                    {/* Environment map for reflections/shiny surface */}
+                    <Environment preset="sunset" />
+
+                    <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
+
                     <Suspense fallback={null}>
-                        <Phoenix position={[0, -2, 0]} scale={0.03} />
+                        <Phoenix position={[0, -1, 0]} scale={0.02} />
                     </Suspense>
 
-                    <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+                    <OrbitControls enableZoom={true} enablePan={false} autoRotate autoRotateSpeed={0.5} minDistance={10} maxDistance={50} />
 
-                    {/* Post Processing for the "Ultra Level" fire glow */}
-                    <EffectComposer>
-                        <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} />
+                    {/* Bloom for the shining/glowing fire effect */}
+                    <EffectComposer disableNormalPass>
+                        <Bloom luminanceThreshold={1.0} intensity={1.0} levels={4} />
                     </EffectComposer>
                 </Canvas>
             </div>

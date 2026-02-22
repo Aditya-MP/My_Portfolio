@@ -1,55 +1,69 @@
-import { useFrame } from '@react-three/fiber';
-import { useFBX, useTexture, useAnimations } from '@react-three/drei';
+import { useFrame, useLoader } from '@react-three/fiber';
+import { useFBX, useAnimations } from '@react-three/drei';
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-export default function Phoenix({ position = [0, -2, 0], scale = 0.08, rotation = [0, 0, 0] }) {
+export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation = [0, 0, 0] }) {
     const group = useRef();
+    const applied = useRef(false);
 
-    // Load model and textures
+    // Load textures FIRST (before FBX) so they're ready
+    const [colorA, emissA, colorB, emissB] = useLoader(THREE.TextureLoader, [
+        '/models/phoenix/Tex_Ride_FengHuang_01a_D_A.tga.png',
+        '/models/phoenix/Tex_Ride_FengHuang_01a_E.tga.png',
+        '/models/phoenix/Tex_Ride_FengHuang_01b_D_A.tga.png',
+        '/models/phoenix/Tex_Ride_FengHuang_01b_E.tga.png',
+    ]);
+
+    // Load the FBX model (do NOT clone — cloning breaks skinned meshes)
     const fbx = useFBX('/models/phoenix/fly.fbx');
 
-    // Load textures (Adjusting based on traditional naming conventions for this particular asset)
-    const colorMapA = useTexture('/models/phoenix/Tex_Ride_FengHuang_01a_D_A.tga.png');
-    const emissiveMapA = useTexture('/models/phoenix/Tex_Ride_FengHuang_01a_E.tga.png');
-    const colorMapB = useTexture('/models/phoenix/Tex_Ride_FengHuang_01b_D_A.tga.png');
-    const emissiveMapB = useTexture('/models/phoenix/Tex_Ride_FengHuang_01b_E.tga.png');
-
-    // Load animations
+    // Setup animations
     const { actions, names } = useAnimations(fbx.animations, group);
 
+    // Material setup — runs once
     useEffect(() => {
-        colorMapA.colorSpace = THREE.SRGBColorSpace;
-        colorMapB.colorSpace = THREE.SRGBColorSpace;
+        if (applied.current) return;
 
-        // Apply textures to the materials inside the FBX
+        colorA.colorSpace = THREE.SRGBColorSpace;
+        colorB.colorSpace = THREE.SRGBColorSpace;
+
         fbx.traverse((child) => {
-            if (child.isMesh) {
-                // Create a new material to ensure we have full control over the glowing properties
-                const newMat = new THREE.MeshStandardMaterial({
-                    map: child.name.includes("01a") || child.material.name.includes("01a") ? colorMapA : colorMapB,
-                    emissiveMap: child.name.includes("01a") || child.material.name.includes("01a") ? emissiveMapA : emissiveMapB,
-                    emissive: new THREE.Color(0xffaa00), // Fire color base
-                    emissiveIntensity: 2.5, // High intensity for bloom
-                    transparent: true,
-                    alphaTest: 0.5,
-                    side: THREE.DoubleSide,
-                });
+            if (!child.isMesh) return;
 
-                child.material = newMat;
-            }
+            const name = (child.material?.name || child.name || '').toLowerCase();
+            const useB = name.includes('01b');
+
+            child.material = new THREE.MeshStandardMaterial({
+                map: useB ? colorB : colorA,
+                emissiveMap: useB ? emissB : emissA,
+                emissive: new THREE.Color(0xffffff),
+                emissiveIntensity: 1.2,
+                transparent: true,
+                alphaTest: 0.05,
+                side: THREE.DoubleSide,
+                roughness: 0.35,
+                metalness: 0.25,
+                envMapIntensity: 0.6,
+            });
         });
 
-        // Play the flying animation if it exists
-        if (names.length > 0) {
-            actions[names[0]].reset().fadeIn(0.5).play();
-        }
-    }, [fbx, actions, names, colorMapA, emissiveMapA, colorMapB, emissiveMapB]);
+        applied.current = true;
+    }, [fbx, colorA, emissA, colorB, emissB]);
 
-    useFrame((state) => {
+    // Animation — separate effect so it always plays
+    useEffect(() => {
+        if (names.length > 0 && actions[names[0]]) {
+            const action = actions[names[0]];
+            action.reset().fadeIn(0.5).play();
+            action.setLoop(THREE.LoopRepeat, Infinity);
+            return () => action.fadeOut(0.5);
+        }
+    }, [actions, names]);
+
+    useFrame(({ clock }) => {
         if (group.current) {
-            // Slow majestic floating
-            group.current.position.y = position[1] + Math.sin(state.clock.elapsedTime) * 0.5;
+            group.current.position.y = position[1] + Math.sin(clock.elapsedTime * 0.8) * 0.4;
         }
     });
 

@@ -1,5 +1,6 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars, AdaptiveDpr, AdaptiveEvents } from '@react-three/drei';
+import { OrbitControls, Stars, AdaptiveDpr, AdaptiveEvents, Environment } from '@react-three/drei';
+import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import Phoenix from './Phoenix';
 import { motion } from 'framer-motion';
 import { Suspense, useEffect, useRef, useState } from 'react';
@@ -63,6 +64,10 @@ export default function Hero() {
                     <ambientLight intensity={1.2} />
                     <directionalLight position={[5, 10, 5]} intensity={2.5} color="#ffffff" />
                     <pointLight position={[-5, -5, -5]} intensity={1.5} color="#ff3300" />
+                    <pointLight position={[3, 3, 3]} intensity={2} color="#ffaa33" />
+                    <pointLight position={[0, -3, 5]} intensity={1} color="#ff6600" />
+
+                    <Environment preset="sunset" />
 
                     <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
 
@@ -75,6 +80,11 @@ export default function Hero() {
                     </Suspense>
 
                     <OrbitControls enableZoom={true} enablePan={false} autoRotate autoRotateSpeed={0.5} minDistance={10} maxDistance={50} />
+
+                    {/* Bloom creates the colorful glow halo around shiny parts */}
+                    <EffectComposer disableNormalPass>
+                        <Bloom luminanceThreshold={0.9} intensity={0.5} levels={3} mipmapBlur={false} />
+                    </EffectComposer>
                 </Canvas>
             </div>
 

@@ -37,13 +37,13 @@ export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation 
             child.material = new THREE.MeshStandardMaterial({
                 map: useB ? colorB : colorA,
                 emissiveMap: useB ? emissB : emissA,
-                emissive: new THREE.Color(0xffffff),
-                emissiveIntensity: 1.2,
+                emissive: new THREE.Color(0xcc9966),
+                emissiveIntensity: 0.8,
                 transparent: true,
                 alphaTest: 0.05,
                 side: THREE.DoubleSide,
-                roughness: 0.35,
-                metalness: 0.25,
+                roughness: 0.10,
+                metalness: 0.5,
             });
         });
 

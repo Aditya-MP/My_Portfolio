@@ -1,16 +1,64 @@
-# React + Vite
+# Adithya M P - Premium Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A highly interactive, 3D-powered personal portfolio showcasing AI, Full-Stack, and Blockchain engineering projects. Built with a focus on ultra-premium cinematic design, fluid animations, and high-performance rendering.
 
-Currently, two official plugins are available:
+![Portfolio Preview](./public/salary_pilot_cover.png) *(Preview image)*
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## ✨ Features
 
-## React Compiler
+- **3D Hero Experience**: An immersive 3D background powered by React Three Fiber featuring a rotating Phoenix model, dynamic lighting, bloom effects, and an interactive starfield.
+- **Cinematic Project Stack**: An "ultra-extreme" sticky-scroll project gallery. Project cards naturally stack over one another with deep shadows, glassmorphism (`backdrop-blur`), and neon hover states.
+- **AI-Generated Assets**: Custom, high-fidelity 3D abstract cover images for every showcased project.
+- **Fully Responsive**: Flawless layout transitions between mobile (vertical stacked cards) and desktop (cinematic split-view cards).
+- **Interactive UI**: Fluid micro-animations across navigation pills, social icons, and buttons using Framer Motion.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🛠️ Tech Stack
 
-## Expanding the ESLint configuration
+- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/) & [GSAP](https://gsap.com/)
+- **3D Rendering**: [Three.js](https://threejs.org/) & [@react-three/fiber](https://docs.pmnd.rs/react-three-fiber/) / [@react-three/drei](https://github.com/pmndrs/drei)
+- **Icons**: [Lucide React](https://lucide.dev/)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🚀 Getting Started
+
+To run this portfolio locally on your machine, follow these steps:
+
+### Prerequisites
+Make sure you have [Node.js](https://nodejs.org/) installed on your system.
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Aditya-MP/My_Portfolio.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd My_Portfolio
+   ```
+
+3. Install the dependencies:
+   ```bash
+   npm install
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Open your browser and visit `http://localhost:5173/` to view the portfolio.
+
+## 👨‍💻 About the Author
+
+**Adithya M P**  
+AIML Engineer | Full Stack Developer  
+Passionate about building intelligent applications, full-stack platforms, and interactive systems. 
+
+- [LinkedIn](https://www.linkedin.com/in/aadithya-m-p/)
+- [GitHub](https://github.com/Aditya-MP)
+
+---
+*Built with ❤️ and ☕ using React and Tailwind CSS.*

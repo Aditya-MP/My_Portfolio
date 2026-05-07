@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Menu, X, Github, Linkedin, Twitter } from 'lucide-react';
 import { useState } from 'react';
+import { profile } from '../profile';
 
 const navItems = [
     { name: 'Home', href: '#home' },
@@ -51,10 +52,15 @@ export default function Navbar() {
 
                 {/* Social Icons (Mini Pills) */}
                 <div className="hidden md:flex items-center gap-3 pl-4 border-l border-white/10">
-                    {[Github, Linkedin].map((Icon, i) => (
+                    {[
+                        { Icon: Github, href: profile.github },
+                        { Icon: Linkedin, href: profile.linkedin }
+                    ].map(({ Icon, href }, i) => (
                         <motion.a
                             key={i}
-                            href="#"
+                            href={href}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             whileHover={{ scale: 1.1, rotate: 5 }}
                             className="p-2 bg-white/5 rounded-full hover:bg-white/10 hover:text-white text-zinc-400 transition-colors"
                         >

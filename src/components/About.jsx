@@ -4,10 +4,10 @@ import { profile } from '../profile';
 import { Network, Code2, Cpu, Globe, GraduationCap, Briefcase, X } from 'lucide-react';
 
 const categoryIcons = {
-    programming: <Code2 size={16} />,
-    aiml: <Cpu size={16} />,
-    frameworks: <Network size={16} />,
-    cloud: <Globe size={16} />,
+    "languages & tools": <Code2 size={16} />,
+    "ai & ml": <Cpu size={16} />,
+    "frameworks": <Network size={16} />,
+    "cloud": <Globe size={16} />,
 };
 
 export default function About() {

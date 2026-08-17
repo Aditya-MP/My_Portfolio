@@ -1,59 +1,90 @@
-import { motion } from 'framer-motion';
+import { Trophy, Medal, Award, Users, Sparkles } from 'lucide-react';
 import { profile } from '../profile';
-import { Trophy, Medal, Crown, Star } from 'lucide-react';
+import SectionHeader from './ui/SectionHeader';
+import { Stagger, StaggerItem } from './ui/Reveal';
 
-const icons = [Trophy, Medal, Crown, Star];
+/**
+ * Achievements are stored as single strings. Split them into rank / event /
+ * year so the card can build a real hierarchy instead of one flat line.
+ * Only en/em dashes are treated as separators — an ASCII hyphen would also
+ * split words like "Runner-Up".
+ */
+function parseAchievement(raw) {
+    const yearMatch = raw.match(/\((\d{4})\)\s*$/);
+    const year = yearMatch ? yearMatch[1] : null;
+    const body = (yearMatch ? raw.slice(0, yearMatch.index) : raw).trim();
+
+    const parts = body.split(/\s+[–—]\s+/);
+    return parts.length > 1
+        ? { rank: parts[0].trim(), event: parts.slice(1).join(' – ').trim(), year }
+        : { rank: null, event: body, year };
+}
+
+function iconFor(rank = '') {
+    const r = rank.toLowerCase();
+    if (r.includes('winner') || r.includes('champion')) return Trophy;
+    if (r.includes('runner')) return Medal;
+    if (r.includes('finalist')) return Award;
+    if (r.includes('volunteer') || r.includes('participant')) return Users;
+    return Sparkles;
+}
 
 export default function Achievements() {
     return (
-        <div className="max-w-6xl mx-auto px-4 py-10">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="text-center mb-16"
-            >
-                <h2 className="text-4xl md:text-5xl font-bold mb-4 text-gradient">
-                    Hall of Fame
-                </h2>
-                <p className="text-zinc-400">Recognition & Awards</p>
-            </motion.div>
+        <>
+            <SectionHeader
+                index="03"
+                eyebrow="Recognition"
+                title="Hackathons &"
+                accent="awards."
+                description="Where the work has been put in front of judges — national ideathons, blockchain hackathons and campus competitions."
+                align="center"
+                rune
+                candles
+                className="mb-16"
+            />
 
+            <Stagger className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" gap={0.06}>
+                {profile.achievements.map((raw) => {
+                    const { rank, event, year } = parseAchievement(raw);
+                    const Icon = iconFor(rank);
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {profile.achievements.map((achievement, i) => {
-                    const Icon = icons[i % icons.length];
                     return (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            whileInView={{ opacity: 1, scale: 1 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: i * 0.1 }}
-                            whileHover={{ y: -5 }}
-                            className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 relative overflow-hidden group hover:border-yellow-500/50 transition-all shadow-xl hover:shadow-yellow-500/10"
+                        <StaggerItem
+                            key={raw}
+                            className="surface surface-interactive group relative overflow-hidden p-7 flex flex-col"
                         >
-                            {/* Background Glow */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-yellow-500/20 to-orange-500/0 rounded-full blur-2xl -mr-10 -mt-10 group-hover:from-yellow-500/30 transition-all" />
+                            <div
+                                className="absolute -top-12 -right-12 w-40 h-40 rounded-full blur-3xl bg-ember-500/10
+                                           transition-all duration-700 group-hover:bg-ember-500/20"
+                                aria-hidden="true"
+                            />
 
-                            <div className="relative z-10 flex items-start gap-4">
-                                <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-2xl shadow-lg text-black transform group-hover:rotate-12 transition-transform">
-                                    <Icon size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-white leading-tight mb-2 group-hover:text-yellow-400 transition-colors">
-                                        {achievement}
-                                    </h3>
-                                    <div className="flex items-center gap-1 text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                                        <Star size={10} className="text-yellow-500 fill-yellow-500" />
-                                        Awarded
-                                    </div>
-                                </div>
+                            <div className="relative z-10 flex items-start justify-between gap-4 mb-5">
+                                <span
+                                    className="flex w-11 h-11 shrink-0 items-center justify-center rounded-2xl
+                                               bg-ember-500/12 text-ember-400 border border-ember-500/25
+                                               transition-transform duration-500 ease-expo group-hover:-rotate-6 group-hover:scale-105"
+                                >
+                                    <Icon size={20} aria-hidden="true" />
+                                </span>
+                                {year && (
+                                    <span className="text-meta uppercase text-ink-500 tabular-nums pt-1">{year}</span>
+                                )}
                             </div>
-                        </motion.div>
+
+                            <div className="relative z-10 mt-auto">
+                                {rank && (
+                                    <p className="text-meta uppercase text-ember-400 mb-2">{rank}</p>
+                                )}
+                                <h3 className="text-title-3 text-ink-100 transition-colors duration-300 group-hover:text-ink-50">
+                                    {event}
+                                </h3>
+                            </div>
+                        </StaggerItem>
                     );
                 })}
-            </div>
-        </div>
+            </Stagger>
+        </>
     );
 }

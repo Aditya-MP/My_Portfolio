@@ -1,77 +1,136 @@
-import { useFrame, useLoader } from '@react-three/fiber';
-import { useFBX, useAnimations } from '@react-three/drei';
-import { useEffect, useRef } from 'react';
+import { useLoader } from '@react-three/fiber';
+import { useGLTF, useAnimations } from '@react-three/drei';
+import { useEffect, useMemo, useRef } from 'react';
+import { useReducedMotion } from 'framer-motion';
 import * as THREE from 'three';
+import { usePhoenixLife } from '../hooks/usePhoenixLife';
+import { usePhoenixFlight } from '../hooks/usePhoenixFlight';
+import { MATERIAL } from '../lib/phoenixLook';
+import { MODEL_CENTER } from '../lib/flightPath';
 
-export default function Phoenix({ position = [0, -2, 0], scale = 0.03, rotation = [0, 0, 0], onLoaded }) {
+const MODEL = '/models/phoenix/phoenix.opt.glb';
+const TEX = [
+    '/models/phoenix/Tex_Ride_FengHuang_01a_D_A.tga.webp',
+    '/models/phoenix/Tex_Ride_FengHuang_01a_E.tga.webp',
+    '/models/phoenix/Tex_Ride_FengHuang_01b_D_A.tga.webp',
+    '/models/phoenix/Tex_Ride_FengHuang_01b_E.tga.webp',
+];
+
+// meshopt-compressed GLB: draco off, meshopt on. drei bundles the decoder.
+useGLTF.preload(MODEL, false, true);
+
+export default function Phoenix({
+    // Measured: the bird occupied ~12% of the frame at 0.016 and read as a
+    // background detail rather than the guide. 0.021 gives it presence without
+    // crowding the copy.
+    scale = 0.021,
+    onLoaded,
+    progress,          // MotionValue 0-1: story position along the flight path
+    positionRef,       // Vector3 the flight hook publishes to, for the ember trail
+    arrivalRef,        // 0-1 awakening progress; see useArrival
+    life = true,       // procedural bone motion; disable with ?nolife
+    flight = true,     // path following; disable with ?noflight
+}) {
     const group = useRef();
     const applied = useRef(false);
+    const reducedMotion = useReducedMotion();
 
-    // Load textures
-    const [colorA, emissA, colorB, emissB] = useLoader(THREE.TextureLoader, [
-        '/models/phoenix/Tex_Ride_FengHuang_01a_D_A.tga.png',
-        '/models/phoenix/Tex_Ride_FengHuang_01a_E.tga.png',
-        '/models/phoenix/Tex_Ride_FengHuang_01b_D_A.tga.png',
-        '/models/phoenix/Tex_Ride_FengHuang_01b_E.tga.png',
-    ]);
+    const [colorA, emissA, colorB, emissB] = useLoader(THREE.TextureLoader, TEX);
 
-    // Load the FBX model
-    const fbx = useFBX('/models/phoenix/fly.fbx');
+    /* The GLB carries geometry, the 88-bone skeleton and the single "Take 001"
+       clip. Textures were deliberately left out of the file and are wired up
+       here, so the two source materials must stay distinguishable by name. */
+    const { scene, animations } = useGLTF(MODEL, false, true);
+    const { actions, names } = useAnimations(animations, group);
 
-    // Setup animations
-    const { actions, names } = useAnimations(fbx.animations, group);
+    /* Colour space is a property of how we consume these textures, not of the
+       loader's cached object — derive corrected clones rather than mutating
+       what the hook returned. */
+    const maps = useMemo(() => {
+        /* No flipY override: the FBX→glTF round-trip was verified byte-identical
+           on TEXCOORD_0, so these textures keep TextureLoader's default. */
+        const srgb = (t) => {
+            const c = t.clone();
+            c.colorSpace = THREE.SRGBColorSpace;
+            c.needsUpdate = true;
+            return c;
+        };
+        return { colorA: srgb(colorA), colorB: srgb(colorB), emissA, emissB };
+    }, [colorA, colorB, emissA, emissB]);
 
-    // Material setup — runs once
     useEffect(() => {
         if (applied.current) return;
 
-        colorA.colorSpace = THREE.SRGBColorSpace;
-        colorB.colorSpace = THREE.SRGBColorSpace;
-
-        fbx.traverse((child) => {
+        scene.traverse((child) => {
             if (!child.isMesh) return;
 
             const name = (child.material?.name || child.name || '').toLowerCase();
             const useB = name.includes('01b');
 
             child.material = new THREE.MeshStandardMaterial({
-                map: useB ? colorB : colorA,
-                emissiveMap: useB ? emissB : emissA,
-                emissive: new THREE.Color(0xcc9966),
-                emissiveIntensity: 0.8,
+                map: useB ? maps.colorB : maps.colorA,
+                emissiveMap: useB ? maps.emissB : maps.emissA,
+                emissive: new THREE.Color(MATERIAL.emissiveColor),
+                emissiveIntensity: MATERIAL.emissiveIntensity,
+                roughness: MATERIAL.roughness,
+                metalness: MATERIAL.metalness,
+                envMapIntensity: MATERIAL.envMapIntensity,
                 transparent: true,
                 alphaTest: 0.05,
                 side: THREE.DoubleSide,
-                roughness: 0.10,
-                metalness: 0.5,
             });
+            child.frustumCulled = false;
         });
 
         applied.current = true;
+        onLoaded?.();
+    }, [scene, maps, onLoaded]);
 
-        // Notify parent that model is loaded and ready
-        if (onLoaded) onLoaded();
-    }, [fbx, colorA, emissA, colorB, emissB, onLoaded]);
+    // Held in a ref, not state: the running action is only ever read inside the
+    // frame loop, and setState here would cascade a render every time it changed.
+    const actionRef = useRef(null);
 
-    // Animation — separate effect so it always plays
     useEffect(() => {
-        if (names.length > 0 && actions[names[0]]) {
-            const action = actions[names[0]];
-            action.reset().fadeIn(0.5).play();
-            action.setLoop(THREE.LoopRepeat, Infinity);
-            return () => action.fadeOut(0.5);
-        }
+        if (!names.length) return;
+        const a = actions[names[0]];
+        if (!a) return;
+        a.reset().fadeIn(0.5).play();
+        a.setLoop(THREE.LoopRepeat, Infinity);
+        actionRef.current = a;
+        return () => {
+            a.fadeOut(0.5);
+            actionRef.current = null;
+        };
     }, [actions, names]);
 
-    useFrame(({ clock }) => {
-        if (group.current) {
-            group.current.position.y = position[1] + Math.sin(clock.elapsedTime * 0.8) * 0.4;
-        }
+    /* Whole-body transform: where it is, where it points, how hard it banks. */
+    usePhoenixFlight({
+        groupRef: group,
+        progress,
+        actionRef,
+        positionRef,
+        arrivalRef,
+        enabled: flight && !reducedMotion,
     });
 
+    /* Bones only: head tracking, feather lag, gaze roll. */
+    usePhoenixLife({
+        scene,
+        progress,
+        enabled: life && !reducedMotion,
+    });
+
+    /* Two groups on purpose.
+       The outer one is what the flight path drives. The inner one shifts the
+       mesh by minus its own bounding-box centre (measured, in model units) so
+       the bird sits ON its group origin — otherwise every waypoint would be
+       offset by ~5.5 units left and 5.2 up and the path would not mean what it
+       says. The offset is expressed pre-scale, so the outer scale applies to it. */
     return (
-        <group ref={group} position={position} rotation={rotation} scale={scale}>
-            <primitive object={fbx} />
+        <group ref={group} scale={scale}>
+            <group position={MODEL_CENTER}>
+                <primitive object={scene} />
+            </group>
         </group>
     );
 }

@@ -2,12 +2,63 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <title>3d-portfolio</title>
+    <meta name="theme-color" content="#0A0A0B" />
+
+    <title>Adithya M P — AIML Engineer & Full Stack Developer</title>
+    <meta
+      name="description"
+      content="Portfolio of Adithya M P — AIML engineer and full-stack developer building intelligent applications, scalable backends and interactive web experiences."
+    />
+    <link rel="canonical" href="https://adithyamp.dev/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Adithya M P — AIML Engineer & Full Stack Developer" />
+    <meta
+      property="og:description"
+      content="Building intelligent applications, scalable backends and interactive web experiences."
+    />
+    <!-- 1200x630 JPEG: social scrapers are unreliable with WebP and with square art. -->
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/profile_pic.jpg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Display: Cormorant Garamond (max weight 700 — the scale must not ask for
+      900 or the browser synthesises a smeared fake bold).
+      Body: Inter, kept deliberately — recruiters have to read the projects.
+      Accent: EB Garamond italic, for ledes and pull quotes only.
+      Data uses a system mono stack, so it costs no download.
+    -->
+    <!--
+      Loaded non-blocking. As a plain stylesheet this request gated first paint
+      at ~2.1s — identical on desktop and 4x-throttled mobile, i.e. purely
+      network-bound. The media="print" swap lets the page paint immediately in
+      the fallback stack; display=swap then swaps the real faces in.
+    -->
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=EB+Garamond:ital,wght@1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'; this.onload=null;"
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=EB+Garamond:ital,wght@1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=EB+Garamond:ital,wght@1,400;1,500&family=Inter:wght@300;400;500;600;700;800&display=swap"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

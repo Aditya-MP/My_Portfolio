@@ -1,133 +1,119 @@
-import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stars, AdaptiveDpr, AdaptiveEvents, Environment } from '@react-three/drei';
-import { EffectComposer, Bloom } from '@react-three/postprocessing';
-import Phoenix from './Phoenix';
-import { motion } from 'framer-motion';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ArrowDown, FileText } from 'lucide-react';
+import { profile } from '../profile';
+import { EASE } from '../lib/motion';
 
-const splitText = (text) => {
-    return text.split("").map((char, index) => (
+/**
+ * Per-character entrance. `offset` shifts the whole word so the two lines
+ * animate in sequence rather than on top of each other.
+ */
+function SplitText({ text, offset = 0, reduce }) {
+    if (reduce) return <>{text}</>;
+
+    return text.split('').map((char, i) => (
         <motion.span
-            key={index}
-            initial={{ opacity: 0, y: 50 }}
+            key={i}
+            initial={{ opacity: 0, y: '0.4em' }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05, duration: 0.5, type: 'spring' }}
+            transition={{ delay: offset + i * 0.04, duration: 0.7, ease: EASE }}
             className="inline-block"
         >
-            {char === " " ? "\u00A0" : char}
+            {char === ' ' ? ' ' : char}
         </motion.span>
     ));
-};
-
-// Loading spinner shown while Phoenix model downloads
-function LoadingSpinner() {
-    return (
-        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-            <div className="flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-2 border-orange-500/30 border-t-orange-500 rounded-full animate-spin" />
-                <span className="text-zinc-500 text-sm font-medium">Loading 3D Model...</span>
-            </div>
-        </div>
-    );
 }
 
 export default function Hero() {
-    const heroRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(true);
-    const [modelLoaded, setModelLoaded] = useState(false);
-
-    // Pause Canvas rendering when hero is scrolled off-screen
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => setIsVisible(entry.isIntersecting),
-            { threshold: 0.1 }
-        );
-        if (heroRef.current) observer.observe(heroRef.current);
-        return () => observer.disconnect();
-    }, []);
+    const reduce = useReducedMotion();
 
     return (
-        <div ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden bg-zinc-950">
-            {/* 3D Background */}
-            <div className="absolute inset-0 z-0">
-                {!modelLoaded && <LoadingSpinner />}
-                <Canvas
-                    camera={{ position: [0, 2, 25], fov: 50 }}
-                    dpr={[1, 1.5]}
-                    performance={{ min: 0.5 }}
-                    gl={{ antialias: false, powerPreference: 'high-performance' }}
-                    frameloop={isVisible ? 'always' : 'never'}
+        <div
+            id="home"
+            className="relative min-h-[100svh] flex items-center justify-center overflow-hidden"
+        >
+            {/* The 3D scene is no longer owned by the hero — it is one fixed
+                canvas behind the whole page. See PhoenixStage. */}
+
+            {/* Vignette + seam into the next section */}
+            <div
+                className="absolute inset-0 z-[5] pointer-events-none bg-gradient-to-b
+                           from-ink-950/70 via-transparent to-ink-950"
+                aria-hidden="true"
+            />
+
+            {/* Content — the wrapper stays click-through so OrbitControls keeps working */}
+            <div className="relative z-10 w-full container-page text-center pointer-events-none">
+                <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: EASE }}
+                    className="eyebrow justify-center mb-8"
                 >
-                    <AdaptiveDpr pixelated />
-                    <AdaptiveEvents />
+                    <span className="w-6 h-px bg-ember-500/50" aria-hidden="true" />
+                    {profile.title}
+                    <span className="w-6 h-px bg-ember-500/50" aria-hidden="true" />
+                </motion.p>
 
-                    <ambientLight intensity={1.2} />
-                    <directionalLight position={[5, 10, 5]} intensity={2.5} color="#ffffff" />
-                    <pointLight position={[-5, -5, -5]} intensity={1.5} color="#ff3300" />
-                    <pointLight position={[3, 3, 3]} intensity={2} color="#ffaa33" />
-                    <pointLight position={[0, -3, 5]} intensity={1} color="#ff6600" />
-
-                    <Environment preset="sunset" />
-
-                    <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={1} />
-
-                    <Suspense fallback={null}>
-                        <Phoenix
-                            position={[0, -1, 0]}
-                            scale={0.02}
-                            onLoaded={() => setModelLoaded(true)}
-                        />
-                    </Suspense>
-
-                    <OrbitControls enableZoom={true} enablePan={false} autoRotate autoRotateSpeed={0.5} minDistance={10} maxDistance={50} />
-
-                    {/* Bloom creates the colorful glow halo around shiny parts */}
-                    <EffectComposer disableNormalPass>
-                        <Bloom luminanceThreshold={0.9} intensity={0.5} levels={3} mipmapBlur={false} />
-                    </EffectComposer>
-                </Canvas>
-            </div>
-
-            {/* Content Overlay */}
-            <div className="z-10 text-center px-4 pointer-events-none select-none relative w-full">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 1 }}
-                    className="relative z-10"
-                >
-                    <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-white mb-2 mix-blend-difference">
-                        {splitText("CREATIVE")}
-                    </h1>
-                    <h1 className="text-6xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-red-500 to-purple-600 [-webkit-text-stroke:2px_rgba(255,255,255,0.1)] md:[-webkit-text-stroke:3px_rgba(255,255,255,0.1)] fall-back-text" style={{ textShadow: "0 0 40px rgba(255,100,0,0.4)" }}
+                <h1 className="text-display-1 font-heading select-none">
+                    <span className="block text-ink-50">
+                        <SplitText text="CREATIVE" reduce={reduce} offset={0.15} />
+                    </span>
+                    <span
+                        className="block text-ember-gradient [-webkit-text-stroke:2px_rgba(255,255,255,0.08)]
+                                   md:[-webkit-text-stroke:3px_rgba(255,255,255,0.08)]"
+                        style={{ textShadow: '0 0 60px rgba(249,106,27,0.35)' }}
                     >
-                        {splitText("DEVELOPER")}
-                    </h1>
-                </motion.div>
+                        <SplitText text="DEVELOPER" reduce={reduce} offset={0.5} />
+                    </span>
+                </h1>
 
-                {/* Decorative elements */}
+                <motion.p
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1, duration: 0.7, ease: EASE }}
+                    className="text-body-lg text-ink-300 max-w-xl mx-auto mt-8"
+                >
+                    I&apos;m <span className="text-ink-50 font-semibold">{profile.name}</span> — I build
+                    intelligent applications, full-stack platforms and interactive systems.
+                </motion.p>
+
+                {/* Only the actions capture pointer events. */}
                 <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: "200px" }}
-                    transition={{ delay: 1, duration: 0.8 }}
-                    className="h-1 bg-white/20 mx-auto mt-8 rounded-full"
-                />
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.15, duration: 0.7, ease: EASE }}
+                    className="mt-10 flex flex-wrap items-center justify-center gap-3 pointer-events-auto"
+                >
+                    <a href="#projects" className="btn-primary">
+                        View Selected Work
+                        <ArrowDown size={18} aria-hidden="true" />
+                    </a>
+                    <a
+                        href={profile.resume}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-secondary"
+                    >
+                        <FileText size={18} aria-hidden="true" /> Download Resume
+                    </a>
+                </motion.div>
             </div>
 
-            <motion.div
+            {/* Scroll hint */}
+            <motion.a
+                href="#about"
+                aria-label="Scroll to about"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 2, duration: 1 }}
-                className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
+                transition={{ delay: 1.8, duration: 0.8 }}
+                className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 group"
             >
-                <div className="w-6 h-10 border-2 border-white/20 rounded-full flex justify-center p-2">
-                    <motion.div
-                        animate={{ y: [0, 12, 0] }}
-                        transition={{ repeat: Infinity, duration: 1.5 }}
-                        className="w-1.5 h-1.5 bg-white rounded-full"
-                    />
-                </div>
-            </motion.div>
+                <span className="flex h-10 w-6 justify-center rounded-full border border-white/20 p-2
+                                 transition-colors group-hover:border-ember-500/60">
+                    <span className="h-1.5 w-1.5 rounded-full bg-ink-200 animate-scroll-hint
+                                     group-hover:bg-ember-400" />
+                </span>
+            </motion.a>
         </div>
     );
 }

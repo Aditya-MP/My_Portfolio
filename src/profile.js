@@ -5,7 +5,7 @@ export const profile = {
   phone: "+91-8431841045",
   linkedin: "https://www.linkedin.com/in/aadithya-m-p/",
   github: "https://github.com/Aditya-MP",
-  resume: "/resume.pdf",
+  resume: "/Adithya_MP_Resume_AIML.pdf",
   imgUrl: "/profile_pic.jpg",
 
   about: `
@@ -24,13 +24,23 @@ hackathons and love experimenting with emerging tech.
 
   projects: [
     {
+      id: 7,
+      title: "WorldBean AI – EUDR Compliance Platform",
+      description: "Architected a full-stack EUDR compliance platform that resolves smallholder coffee plots from Bhoomi land records and satellite imagery through a four-tier geolocation pipeline with a human-in-the-loop consistency gate. Integrated SAM2 change detection and LayoutLM document parsing to verify each plot against Hansen deforestation data and generate EU-compliant Due Diligence Statements.",
+      tech: ["React", "Cesium", "FastAPI", "PostGIS", "SAM2"],
+      link: "https://dishaank.netlify.app/",
+      github: "https://github.com/Aditya-MP/Dishaank-AI",
+      cover: "/worldbean_cover.webp",
+      year: "Aug 2026"
+    },
+    {
       id: 1,
       title: "Salary Pilot Agent – AI Financial Autopilot",
       description: "Architected a 4-agent orchestrator with LangGraph + Llama 3.1 70B for ESG-aligned salary allocation. Deployed local AMD ROCm NPU inference, cutting cloud overhead by 20x at sub-100ms latency.",
       tech: ["LangGraph", "Llama 3.1", "Kafka", "AMD NPU"],
       link: "https://illustrious-blancmange-d4f8cc.netlify.app/",
       github: "https://github.com/Aditya-MP/A_Salary_Pilot_-AMD_Addition-",
-      cover: "/salary_pilot_cover.png",
+      cover: "/salary_pilot_cover.webp",
       year: "Feb 2026"
     },
     {
@@ -40,7 +50,7 @@ hackathons and love experimenting with emerging tech.
       tech: ["Cardano", "Web3", "AI"],
       link: "https://cardano-ai-assistence.netlify.app/",
       github: "https://github.com/Aditya-MP/Agent-Force",
-      cover: "/agent_forces_cover.png",
+      cover: "/agent_forces_cover.webp",
       year: "2025"
     },
     {
@@ -50,7 +60,7 @@ hackathons and love experimenting with emerging tech.
       tech: ["Java", "Spring Boot", "Computer Vision"],
       link: "https://github.com/Aditya-MP/Face-Detection-attendence-system-Java-Spring-boot-",
       github: "https://github.com/Aditya-MP/Face-Detection-attendence-system-Java-Spring-boot-",
-      cover: "/java_attendance_cover.png",
+      cover: "/java_attendance_cover.webp",
       year: "2025"
     },
     {
@@ -60,7 +70,7 @@ hackathons and love experimenting with emerging tech.
       tech: ["Next.js", "Gemini API", "Firebase"],
       link: "https://chef-ai-a-recipe-generator.netlify.app/",
       github: "https://github.com/Aditya-MP/Project-Chef-AI",
-      cover: "/chef_ai_cover.png",
+      cover: "/chef_ai_cover.webp",
       year: "July 2025"
     },
     {
@@ -70,7 +80,7 @@ hackathons and love experimenting with emerging tech.
       tech: ["Python", "Flutter", "Vertex AI"],
       link: "https://kalakrithi-39f00.web.app",
       github: "https://github.com/Aditya-MP/kalakriti-_hosting",
-      cover: "/kalakriti_cover.png",
+      cover: "/kalakriti_cover.webp",
       year: "Sept 2025"
     },
     {
@@ -80,7 +90,7 @@ hackathons and love experimenting with emerging tech.
       tech: ["React", "AI", "Geolocation", "Firebase"],
       link: "https://locallens-a3b3f.web.app/",
       github: "https://github.com/Aditya-MP/Locallens-AI-Powered-Hyperlocal-Discovery-Optimization.git",
-      cover: "/locallens_cover.png",
+      cover: "/locallens_cover.webp",
       year: "2026"
     }
   ],
@@ -126,6 +136,7 @@ hackathons and love experimenting with emerging tech.
   ],
 
   achievements: [
+    "Finalist, Top 1% – Innova Hackathon Chapter 1, WorldBean AI (2026)",
     "National Runner-Up – Sandbox 1.0 Ideathon, IIT Bombay (2025)",
     "Finalist – Cardano Blockchain Hackathon, Hack2Skills (2025)",
     "Finalist – Hackademia National Hackathon (2025)",

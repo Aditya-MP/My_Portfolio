@@ -147,7 +147,10 @@ export default function ProjectCodex({ project, index, Icon, origin, onClose }) 
                 </div>
 
                 {/* ---- record ------------------------------------------- */}
-                <div className="relative min-h-0 flex-1 overflow-y-auto p-7 md:p-10">
+                {/* Column, not a single scrolling block: the reading matter
+                    scrolls, the actions do not. See the footer below. */}
+                <div className="relative flex min-h-0 flex-1 flex-col">
+                <div className="min-h-0 flex-1 overflow-y-auto p-7 md:p-10">
                     <p className="eyebrow mb-4">
                         <span className="h-px w-5 bg-gilt-600/50" aria-hidden="true" />
                         {project.year}
@@ -218,7 +221,24 @@ export default function ProjectCodex({ project, index, Icon, origin, onClose }) 
                         </section>
                     )}
 
-                    <div className="mt-9 flex flex-wrap gap-3">
+                </div>
+
+                {/* ---- actions ------------------------------------------ */}
+                {/* PINNED, deliberately — these were the last block inside the
+                    scrolling pane, which made them the first thing to fall off
+                    a short viewport. Once they overflowed the panel's
+                    `overflow-hidden` edge they were clipped out of sight, and a
+                    click where they appeared to be landed on the scrim behind
+                    instead, closing the modal rather than opening the project.
+                    Measured: only ~9px of content was hidden at 1920x950, but
+                    93px at 1440x780 and over 200px on a 125%-scaled 1080p
+                    laptop — so the primary call to action was unreachable on
+                    exactly the ordinary screens most visitors use.
+
+                    A modal's actions should never be reachable only by
+                    scrolling: the body scrolls, the action bar stays. */}
+                <div className="shrink-0 border-t border-white/[0.07] bg-ink-950 px-7 py-5 md:px-10">
+                    <div className="flex flex-wrap gap-3">
                         <a
                             href={project.link}
                             target="_blank"
@@ -244,6 +264,7 @@ export default function ProjectCodex({ project, index, Icon, origin, onClose }) 
                             </a>
                         )}
                     </div>
+                </div>
                 </div>
             </motion.div>
         </div>

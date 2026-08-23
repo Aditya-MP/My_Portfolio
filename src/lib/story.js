@@ -1,10 +1,14 @@
 /**
  * The narrative spine — deliberately free of any three.js import.
  *
- * PhoenixStage needs the section list to track scroll, but it must not drag
- * three into the main bundle to get it. Keeping this module pure keeps the
- * WebGL code entirely behind the lazy boundary (measured: importing the curve
- * here instead put ~380 KB back on the critical path).
+ * MysticWorld needs the section list to track scroll (for its background
+ * colour grade), but it must not drag three into the main bundle to get it.
+ * The phoenix's own motion no longer reads scroll at all — usePhoenixAutopilot
+ * drives its story position on a clock — but it still reads BEATS via
+ * beatAt() every frame, so this module has to stay reachable without three
+ * regardless. Keeping it pure keeps the WebGL code entirely behind the lazy
+ * boundary (measured: importing the curve here instead put ~380 KB back on
+ * the critical path).
  *
  * SIX BEATS: silence → discovery → movement → acceleration → ascension → rest.
  */

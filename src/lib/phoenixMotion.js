@@ -18,10 +18,11 @@ const num = (name, fallback) => {
 };
 
 export const MOTION = {
-    /* ---- following the scroll -------------------------------------- */
-    /** How hard the bird chases your scroll position.
-     *  Was 2.2, which read as laggy — the bird arrived long after you stopped.
-     *  3.4 keeps the sense of flying-to-a-place without the rubber band. */
+    /* ---- following its own route -------------------------------------- */
+    /** How hard the bird chases usePhoenixAutopilot's target point on the
+     *  curve. Was 2.2, which read as laggy — the bird arrived long after the
+     *  target moved on. 3.4 keeps the sense of flying-to-a-place without the
+     *  rubber band. */
     follow: num('follow', 3.4),
 
     /** How fast it turns to face its direction of travel.
@@ -58,4 +59,17 @@ export const MOTION = {
     /* ---- arrival ------------------------------------------------------ */
     /** Seconds for the awakening sequence before scroll takes over. */
     arrivalDuration: num('arrival', 4.2),
+
+    /* ---- autonomous wander -------------------------------------------- */
+    /** Units of drift layered on top of usePhoenixAutopilot's target, once
+     *  arrival has finished. The autopilot already frees the bird from
+     *  scroll; this is what stops it reading as a train on rails even against
+     *  its OWN route — the exact position it occupies along the curve keeps
+     *  breathing on its own too. Set to 0 to pin it back to the bare path,
+     *  e.g. for a screenshot. */
+    /* Lowered from 1.6: stacked on top of the loop's own depth changes, that
+       much drift stopped reading as "alive" and started reading as the bird
+       losing the plot and sliding off somewhere. 0.9 keeps the path from
+       feeling like a rail without fighting it. */
+    wanderAmp: num('wander', 0.9),
 };

@@ -224,6 +224,26 @@
     0%, 100% { opacity: 0.55; transform: scale(1); }
     50%      { opacity: 0.85; transform: scale(1.12); }
   }
+
+  /* Ember mote lifting off an artifact card on hover. Drifts as it rises so
+     it reads as heat in air rather than a dot on a rail. */
+  @keyframes card-mote {
+    0%   { transform: translate(0, 0) scale(1); opacity: 0; }
+    15%  { opacity: 0.85; }
+    100% { transform: translate(6px, -150px) scale(0.3); opacity: 0; }
+  }
+
+  /* Two mist bands drifting opposite directions at different distances —
+     the layering is what sells depth, not the motion itself. */
+  @keyframes mist-drift-a {
+    0%, 100% { transform: translateX(-3%); }
+    50%      { transform: translateX(4%); }
+  }
+  @keyframes mist-drift-b {
+    0%, 100% { transform: translateX(4%); }
+    50%      { transform: translateX(-3%); }
+  }
+
 }
 
 /* ------------------------------------------------------------------

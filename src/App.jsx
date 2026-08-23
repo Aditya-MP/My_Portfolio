@@ -9,14 +9,17 @@ import Section from './components/Section';
 import AmbientToggle from './components/ui/AmbientToggle';
 import ErrorBoundary from './components/ui/ErrorBoundary';
 import PhoenixStage from './components/PhoenixStage';
+import MysticWorld from './components/MysticWorld';
 import WandCursor from './components/ui/WandCursor';
 import { profile } from './profile';
 
 function App() {
   return (
-    /* No background on this wrapper: body paints the ground, the fixed canvas
-       sits above it at z-0, and the content stacks above that at z-10. An
-       opaque wrapper here would hide the phoenix completely. */
+    /* No background on this wrapper: body paints the ground, MysticWorld (the
+       castle) and PhoenixStage (the WebGL canvas) both sit at z-0 — in that
+       DOM order, so the canvas's transparent clear colour lets the skyline
+       show through — and the content stacks above both at z-10. An opaque
+       wrapper here would hide the phoenix and the keep completely. */
     <div className="relative min-h-screen text-ink-100">
       <a
         href="#about"
@@ -26,6 +29,7 @@ function App() {
         Skip to content
       </a>
 
+      <MysticWorld />
       <PhoenixStage />
       <WandCursor />
 

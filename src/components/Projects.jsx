@@ -1,189 +1,144 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { Github, Code2, ArrowUpRight } from 'lucide-react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useInView, useReducedMotion } from 'framer-motion';
+import { Satellite, Wallet, ScanFace, ChefHat, Palette, MapPin, Bot } from 'lucide-react';
 import { profile } from '../profile';
 import SectionHeader from './ui/SectionHeader';
-import { useTilt } from '../hooks/useTilt';
+import ArtifactCard from './ui/ArtifactCard';
+import ProjectCodex from './ui/ProjectCodex';
 
-const total = profile.projects.length;
+/**
+ * The Projects section as a spread of artifact cards rather than a stack of
+ * page-width panels.
+ *
+ * Scroll in → the cards rise out of a single pile and fan into an arc →
+ * click one → it opens into its full record with the rest still visible
+ * behind → close → back to the spread.
+ *
+ * GEOMETRY. The fan is a real arc, not a row with rotations sprinkled on:
+ * every card is placed by rotating it about one pivot far below the
+ * container, so its angle and its position agree the way a held hand of cards
+ * does. Faking it — translate on x, rotate independently — is what makes
+ * these look like stickers rather than objects.
+ *
+ * RESPONSIVENESS. All the arc maths is written once, at one canonical size,
+ * and the whole fan is then scaled to fit its measured container. Recomputing
+ * the geometry per breakpoint would mean several sets of magic numbers that
+ * drift apart. Below `FAN_MIN_WIDTH` the arc stops being usable at any scale —
+ * seven overlapping cards on a phone leaves nothing legible — so the same
+ * cards render as a plain grid instead. Same components, same data, different
+ * arrangement.
+ */
 
-function ProjectCard({ project, index, progress }) {
-    const reduce = useReducedMotion();
-    const tilt = useTilt();
-    const isLast = index === total - 1;
+/* Presentation, not data: which mark stands for which project. Keyed by id so
+   reordering profile.projects can't silently reassign icons. */
+const ICONS = {
+    7: Satellite,   // WorldBean — satellite verification
+    1: Wallet,      // Salary Pilot — allocation
+    2: Bot,         // Agent Forces — conversational agent
+    3: ScanFace,    // Face recognition attendance
+    4: ChefHat,     // Chef-AI
+    5: Palette,     // Kalakrithi — artisan craft
+    6: MapPin,      // Local Lens — hyperlocal
+};
+const iconFor = (id) => ICONS[id] ?? Bot;
 
-    // Each card parks slightly lower than the last so the stack stays readable.
-    const top = `calc(6rem + ${index * 18}px)`;
+/* Canonical fan, in px at scale 1. */
+const CARD_W = 200;
+const CARD_H = 282;
+/* Radius sets how far apart the cards land; the angle sets how much each one
+   tilts. They are tuned against each other rather than to taste: at radius
+   1150 the seven cards stepped only ~135px apart, so each card buried nearly
+   half of its neighbour and the project names were cut mid-word. Opening the
+   radius to 1400 (same angle, so the same tilt) steps them ~164px apart —
+   they still overlap like a held hand, but every name and tagline stays
+   fully legible, which the brief treats as non-negotiable. */
+const PIVOT_RADIUS = 1400;   // distance from arc centre to card centre
+const ARC_RAD = 0.72;        // total angular spread of the whole hand
+const FAN_WIDTH = 1240;      // container width the geometry is authored for
+const FAN_MIN_WIDTH = 768;   // below this, fall back to the grid
 
-    /* Recede as the next card arrives. The card holds full size for the first
-       half of its slot — it is the front card then — and only shrinks once the
-       one behind it is actually climbing over it.
-
-       Written as explicit functions rather than range arrays so a non-finite
-       scroll progress can't reach the DOM. useScroll reports NaN if its target
-       measures zero-height (it can, before layout settles), and `scale: NaN`
-       plus `opacity: NaN` renders every card invisible — a black page that
-       looks exactly like a crash. */
-    const coverStart = (index + 0.55) / total;
-    const coverEnd = (index + 1) / total;
-
-    const covered = (p) => {
-        if (!Number.isFinite(p)) return 0;
-        const t = (p - coverStart) / (coverEnd - coverStart);
-        return t < 0 ? 0 : t > 1 ? 1 : t;
+/** Where card `i` of `n` sits on the arc. */
+function fanSlot(i, n) {
+    const t = n > 1 ? i / (n - 1) - 0.5 : 0;   // -0.5 … +0.5
+    const angle = t * ARC_RAD;
+    return {
+        x: Math.sin(angle) * PIVOT_RADIUS,
+        y: (1 - Math.cos(angle)) * PIVOT_RADIUS,
+        rotate: (angle * 180) / Math.PI,
     };
-
-    const scale = useTransform(progress, (p) => 1 - covered(p) * 0.1);
-    const opacity = useTransform(progress, (p) => 1 - covered(p) * 0.5);
-    const depth = isLast || reduce ? undefined : { scale, opacity };
-
-    return (
-        <div className="sticky w-full" style={{ top }}>
-            {/* Depth layer: scales from the top edge so the peeking strips stay put. */}
-            <motion.div style={depth} className="origin-top transform-gpu">
-                {/* min-height, never a fixed height: the card must grow to its content.
-                    A fixed height plus overflow-hidden silently clips the button row. */}
-                <motion.article
-                    onPointerMove={tilt.onPointerMove}
-                    onPointerLeave={tilt.onPointerLeave}
-                    style={{
-                        rotateX: tilt.rotateX,
-                        rotateY: tilt.rotateY,
-                        transformPerspective: 1400,
-                    }}
-                    className="group relative flex flex-col md:flex-row md:min-h-[540px] overflow-hidden
-                               rounded-5xl border border-white/[0.08] bg-ink-950 shadow-e4 transform-gpu
-                               transition-[border-color,box-shadow] duration-500 ease-expo
-                               hover:border-gilt-600/40 hover:shadow-glow-lg"
-                >
-                    {/* Cursor-tracked glow */}
-                    <motion.div
-                        style={{ background: tilt.glow }}
-                        className="absolute inset-0 z-20 pointer-events-none opacity-0
-                                   transition-opacity duration-500 group-hover:opacity-100"
-                        aria-hidden="true"
-                    />
-                    {/* Specular top edge — sells the tilt as a physical surface */}
-                    <div
-                        className="absolute inset-x-0 top-0 h-px z-20 pointer-events-none
-                                   bg-gradient-to-r from-transparent via-white/25 to-transparent
-                                   opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                        aria-hidden="true"
-                    />
-
-                    {/* Copy */}
-                    <div className="order-2 md:order-1 w-full md:w-1/2 p-8 md:p-10 lg:p-12 flex flex-col justify-between
-                                    relative z-10 bg-ink-950/85 backdrop-blur-2xl md:border-r border-white/[0.06]">
-                        <div>
-                            <div className="flex items-center gap-3 mb-6">
-                                <span className="text-meta font-mono text-gilt-500 tabular-nums">
-                                    {String(index + 1).padStart(2, '0')}
-                                </span>
-                                <span className="w-6 h-px bg-gilt-600/50" aria-hidden="true" />
-                                <span className="text-meta uppercase text-ink-500">
-                                    {project.year} · {String(total).padStart(2, '0')} total
-                                </span>
-                            </div>
-
-                            {/* title-2 is the card altitude; title-1 is reserved for section headings. */}
-                            <h3 className="text-title-2 text-ink-50 mb-5 transition-colors duration-500 group-hover:text-gilt-200">
-                                {project.title}
-                            </h3>
-
-                            <p className="text-body text-ink-400 mb-7 max-w-xl line-clamp-5">
-                                {project.description}
-                            </p>
-
-                            <ul className="flex flex-wrap gap-2 mb-8">
-                                {project.tech.map((tag) => (
-                                    <li key={tag} className="chip">{tag}</li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="flex gap-3 mt-auto">
-                            <a
-                                href={project.link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="btn-primary flex-1 md:flex-none group/btn"
-                            >
-                                Launch Project
-                                <ArrowUpRight
-                                    size={18}
-                                    aria-hidden="true"
-                                    className="transition-transform duration-300 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5"
-                                />
-                            </a>
-                            {project.github && (
-                                <a
-                                    href={project.github}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    aria-label={`${project.title} source on GitHub`}
-                                    className="btn-icon"
-                                >
-                                    <Github size={19} aria-hidden="true" />
-                                </a>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Visual — md:h-auto + flex stretch; h-full would collapse now the row height is auto. */}
-                    <div className="order-1 md:order-2 w-full md:w-1/2 h-64 md:h-auto relative overflow-hidden bg-ink-900">
-                        {project.cover ? (
-                            <>
-                                {/* Held at a constant 1.10 rather than zooming to 1.0 on hover:
-                                    the 5% overscan is what hides the edges while the ±12px
-                                    parallax offset is running. Hover feedback comes from the
-                                    overlay lightening instead. */}
-                                <motion.img
-                                    src={project.cover}
-                                    alt={`${project.title} cover`}
-                                    loading={index === 0 ? 'eager' : 'lazy'}
-                                    decoding="async"
-                                    style={{ x: tilt.parallaxX, y: tilt.parallaxY }}
-                                    className="absolute inset-0 w-full h-full object-cover scale-110 transform-gpu"
-                                />
-                                <div
-                                    className="absolute inset-0 pointer-events-none bg-ink-950/45 transition-colors
-                                               duration-700 group-hover:bg-ink-950/10"
-                                    aria-hidden="true"
-                                />
-                                <div
-                                    className="absolute inset-0 pointer-events-none shadow-[inset_0_0_140px_rgba(10,10,11,0.9)]"
-                                    aria-hidden="true"
-                                />
-                            </>
-                        ) : (
-                            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ink-800 to-ink-950">
-                                <div className="absolute inset-0 opacity-[0.04] bg-dot-grid [background-size:22px_22px]" />
-                                <motion.span
-                                    style={{ x: tilt.parallaxX, y: tilt.parallaxY }}
-                                    className="relative z-10 flex w-28 h-28 items-center justify-center rounded-full
-                                               bg-ink-900/80 backdrop-blur-xl border border-white/10 shadow-e3"
-                                >
-                                    <Code2
-                                        size={42}
-                                        aria-hidden="true"
-                                        className="text-ink-500 transition-colors duration-500 group-hover:text-ember-500"
-                                    />
-                                </motion.span>
-                            </div>
-                        )}
-                    </div>
-                </motion.article>
-            </motion.div>
-        </div>
-    );
 }
 
+const ARC_DIP = (1 - Math.cos(ARC_RAD / 2)) * PIVOT_RADIUS;
+const FAN_HEIGHT = CARD_H + ARC_DIP + 56; // + room for the hover lift
+
 export default function Projects() {
-    const trackRef = useRef(null);
-    const { scrollYProgress } = useScroll({
-        target: trackRef,
-        offset: ['start start', 'end end'],
-    });
+    const reduce = useReducedMotion();
+    const projects = profile.projects;
+
+    const wrapRef = useRef(null);
+    const cardRefs = useRef([]);
+
+    /* Observed on the WRAPPER, which is always mounted — not on the fan or the
+       grid. Those two swap places once the measure below decides which
+       arrangement fits, and useInView captures its target when its effect
+       runs: point it at either branch and it spends the rest of the session
+       observing a node that got unmounted a frame later, reports false
+       forever, and the cards never leave their pile. */
+    const inView = useInView(wrapRef, { once: true, amount: 0.3 });
+
+    const [openIndex, setOpenIndex] = useState(null);
+    const [origin, setOrigin] = useState('50% 50%');
+    const [layout, setLayout] = useState({ isFan: false, scale: 1 });
+    /* Which card is being pointed at or focused. The fan overlaps by design,
+       and because the cards are rotated they overlap MORE toward their lower
+       edge — which is exactly where the tagline sits. Rather than spreading
+       the hand until nothing overlaps (at which point it stops reading as a
+       hand at all), the card under the cursor lifts to the front, so any card
+       can be read in full on demand. This is also why it tracks focus, not
+       just hover: a keyboard user tabbing through gets the same reveal. */
+    const [active, setActive] = useState(null);
+
+    /* Measure in a layout effect: this decides between two arrangements, and
+       doing it after paint would show the wrong one for a frame. */
+    useLayoutEffect(() => {
+        const measure = () => {
+            const w = wrapRef.current?.clientWidth ?? 0;
+            setLayout({
+                isFan: w >= FAN_MIN_WIDTH,
+                scale: Math.min(1, w / FAN_WIDTH),
+            });
+        };
+        measure();
+        const ro = new ResizeObserver(measure);
+        if (wrapRef.current) ro.observe(wrapRef.current);
+        return () => ro.disconnect();
+    }, []);
+
+    /* Grow the detail view out of the card that was clicked. Measured at click
+       time rather than stored per card, because the fan's scale — and so every
+       card's screen position — changes with the viewport. */
+    const open = useCallback((i) => {
+        const el = cardRefs.current[i];
+        if (el) {
+            const r = el.getBoundingClientRect();
+            const px = ((r.left + r.width / 2) / window.innerWidth) * 100;
+            const py = ((r.top + r.height / 2) / window.innerHeight) * 100;
+            setOrigin(`${px.toFixed(1)}% ${py.toFixed(1)}%`);
+        }
+        setOpenIndex(i);
+    }, []);
+
+    const close = useCallback(() => setOpenIndex(null), []);
+
+    // A resize while open would leave the panel growing from a stale point.
+    useEffect(() => {
+        if (openIndex === null) return;
+        const onResize = () => setOrigin('50% 50%');
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, [openIndex]);
+
+    const settled = reduce || inView;
 
     return (
         <div className="relative isolate container-page">
@@ -194,23 +149,109 @@ export default function Projects() {
                 eyebrow="Selected Works"
                 title="Things I've"
                 accent="shipped."
-                description="Intelligent applications, scalable backends and premium web experiences — built end to end."
+                description="Seven artifacts. Draw one from the spread to read its full record."
                 align="center"
                 size="lg"
                 rune
-                className="mb-24 md:mb-32"
+                className="mb-16 md:mb-20"
             />
 
-            <div ref={trackRef} className="relative flex flex-col gap-[18vh] md:gap-[26vh] pb-[15vh]">
-                {profile.projects.map((project, index) => (
-                    <ProjectCard
-                        key={project.id}
-                        project={project}
-                        index={index}
-                        progress={scrollYProgress}
-                    />
-                ))}
+            <div ref={wrapRef}>
+                {layout.isFan ? (
+                    <div
+                        className="relative mx-auto"
+                        style={{ height: FAN_HEIGHT * layout.scale, width: FAN_WIDTH * layout.scale }}
+                    >
+                        <div
+                            className="absolute left-1/2 top-0 origin-top"
+                            style={{ transform: `translateX(-50%) scale(${layout.scale})`, width: FAN_WIDTH }}
+                        >
+                            {projects.map((project, i) => {
+                                const slot = fanSlot(i, projects.length);
+                                return (
+                                    <motion.div
+                                        key={project.id}
+                                        className="absolute left-1/2 top-0"
+                                        onMouseEnter={() => setActive(i)}
+                                        onMouseLeave={() => setActive((c) => (c === i ? null : c))}
+                                        onFocusCapture={() => setActive(i)}
+                                        onBlurCapture={() => setActive((c) => (c === i ? null : c))}
+                                        style={{
+                                            marginLeft: -CARD_W / 2,
+                                            zIndex: openIndex === i ? 40 : active === i ? 30 : 10 + i,
+                                        }}
+                                        initial={
+                                            reduce
+                                                ? false
+                                                : { x: 0, y: 60, rotate: 0, opacity: 0, scale: 0.92 }
+                                        }
+                                        animate={
+                                            settled
+                                                ? { x: slot.x, y: slot.y + 16, rotate: slot.rotate, opacity: 1, scale: 1 }
+                                                : { x: 0, y: 60, rotate: 0, opacity: 0, scale: 0.92 }
+                                        }
+                                        transition={
+                                            reduce
+                                                ? { duration: 0 }
+                                                : {
+                                                      type: 'spring',
+                                                      stiffness: 84,
+                                                      damping: 17,
+                                                      mass: 0.9,
+                                                      delay: 0.07 * i,
+                                                  }
+                                        }
+                                    >
+                                        <ArtifactCard
+                                            ref={(el) => { cardRefs.current[i] = el; }}
+                                            project={project}
+                                            index={i}
+                                            Icon={iconFor(project.id)}
+                                            onOpen={() => open(i)}
+                                            dimmed={openIndex !== null && openIndex !== i}
+                                        />
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                ) : (
+                    /* Phone arrangement: the same artifacts, laid out to be read. */
+                    <ul className="grid grid-cols-2 justify-items-center gap-4 sm:gap-6">
+                        {projects.map((project, i) => (
+                            <motion.li
+                                key={project.id}
+                                initial={reduce ? false : { opacity: 0, y: 24 }}
+                                animate={settled ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
+                                transition={reduce ? { duration: 0 } : { duration: 0.5, delay: 0.05 * i }}
+                            >
+                                <ArtifactCard
+                                    ref={(el) => { cardRefs.current[i] = el; }}
+                                    project={project}
+                                    index={i}
+                                    Icon={iconFor(project.id)}
+                                    onOpen={() => open(i)}
+                                    dimmed={openIndex !== null && openIndex !== i}
+                                    variant="grid"
+                                />
+                            </motion.li>
+                        ))}
+                    </ul>
+                )}
             </div>
+
+            <AnimatePresence>
+                {openIndex !== null && (
+                    <ProjectCodex
+                        key={projects[openIndex].id}
+                        project={projects[openIndex]}
+                        index={openIndex}
+                        Icon={iconFor(projects[openIndex].id)}
+                        origin={origin}
+                        onClose={close}
+                    />
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -67,6 +67,32 @@ export default function Phoenix({
             const name = (child.material?.name || child.name || '').toLowerCase();
             const useB = name.includes('01b');
 
+            /* ALPHA CUTOUT, NOT BLENDING — this is what stops chunks of the
+               bird vanishing.
+
+               The whole phoenix is ONE mesh of two primitives: body, wings and
+               tail all live inside the same two draw calls. With
+               `transparent: true` three.js puts them in the transparent queue,
+               which sorts back-to-front PER OBJECT — and with only two objects
+               spanning the entire bird, that sort can't order anything
+               correctly. Inside a primitive triangles just render in buffer
+               order, and since depthWrite stays on, a near-camera feather
+               drawn early writes depth and depth-rejects the body drawn later.
+               Whole sections disappear, and which sections depends on the
+               viewing angle — which is exactly why it looked fine from some
+               points of the flight and gutted from others.
+
+               Alpha-testing in the OPAQUE pass removes the failure mode
+               rather than tuning it: fragments below the threshold are
+               discarded outright, everything else is depth-tested per
+               fragment, and sorting never enters into it. Same technique
+               engines use for foliage and hair cards, which is what these
+               feather planes are.
+
+               alphaTest is 0.5 (not the old 0.05): with blending gone, a low
+               threshold keeps the texture's near-invisible fringe as opaque
+               pixels and haloes every feather. DoubleSide stays — the
+               feathers are flat cards and need both faces. */
             child.material = new THREE.MeshStandardMaterial({
                 map: useB ? maps.colorB : maps.colorA,
                 emissiveMap: useB ? maps.emissB : maps.emissA,
@@ -75,8 +101,8 @@ export default function Phoenix({
                 roughness: MATERIAL.roughness,
                 metalness: MATERIAL.metalness,
                 envMapIntensity: MATERIAL.envMapIntensity,
-                transparent: true,
-                alphaTest: 0.05,
+                transparent: false,
+                alphaTest: 0.5,
                 side: THREE.DoubleSide,
             });
             child.frustumCulled = false;

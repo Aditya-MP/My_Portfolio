@@ -1,8 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { useStoryProgress } from '../hooks/useStoryProgress';
+import { usePhoenixAutopilot } from '../hooks/usePhoenixAutopilot';
 import { useArrival } from '../hooks/useArrival';
-import { SECTION_IDS } from '../lib/story';
 import ErrorBoundary from './ui/ErrorBoundary';
 
 // three / drei / postprocessing sit behind this boundary and are fetched only
@@ -34,7 +33,9 @@ function FirstEmber() {
  *
  * ONE canvas, never one per section — multiple WebGL contexts is the standard
  * way these builds fall over. The DOM keeps scrolling normally on top; the
- * scene only ever reads scroll progress.
+ * scene itself never reads scroll at all — usePhoenixAutopilot drives the
+ * bird's story position on its own clock, so it keeps flying its route
+ * whether or not anyone scrolls. See that hook for why.
  *
  * pointer-events-none is what lets it span the whole page without swallowing
  * clicks. usePhoenixLife therefore reads the pointer from window rather than
@@ -42,7 +43,7 @@ function FirstEmber() {
  */
 export default function PhoenixStage() {
     const reduce = useReducedMotion();
-    const progress = useStoryProgress(SECTION_IDS);
+    const progress = usePhoenixAutopilot(reduce);
     const { progress: arrivalRef } = useArrival();
     const [loaded, setLoaded] = useState(false);
     const [visible, setVisible] = useState(true);

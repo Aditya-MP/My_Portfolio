@@ -50,25 +50,28 @@ hackathons and love experimenting with emerging tech.
     },
     {
       id: 1,
-      title: "Salary Pilot Agent – AI Financial Autopilot",
-      tagline: "Four agents allocating salary on-device",
-      description: "Architected a 4-agent orchestrator with LangGraph + Llama 3.1 70B for ESG-aligned salary allocation. Deployed local AMD ROCm NPU inference, cutting cloud overhead by 20x at sub-100ms latency.",
-      problem: "ESG-aligned salary allocation needs large-model reasoning, but routing every decision to a cloud LLM makes it slow and expensive to run continuously.",
+      title: "SalaryPilot – AI Financial Runway Planner",
+      tagline: "Know exactly how long you could last",
+      description: "A three-service personal finance platform for Indian salaried employees, built around runway — how many months you survive on zero income — instead of net worth. A React frontend computes the runway, tax and portfolio engines client-side; a Go API owns identity and a double-entry wallet ledger on Postgres; a Python service serves eight ML models hand-implemented on numpy. Every model ships with the baseline it beat, or it does not ship.",
+      problem: "Personal finance apps answer \"what do I own?\" — a number that moves on its own and that you can rarely influence. The question salaried people actually carry is: if the income stopped today, how long before I am in trouble, and what would genuinely change that?",
       features: [
-        "Four-agent orchestrator built on LangGraph with Llama 3.1 70B",
-        "Local AMD ROCm NPU inference instead of cloud round-trips",
-        "ESG-aligned allocation logic",
-        "Kafka-based event flow between agents"
+        "Runway engine measuring months of cover against essential spend only, with assets haircut by real liquidity (equity 85%, crypto 70%, locked retirement instruments 0%)",
+        "Freedom Score: a 0–100 composite of five pillars, each shown with its own score and a plain-English verdict rather than a black box",
+        "Ranked levers — every suggested action simulated against the user's own numbers and sorted by its actual effect on runway",
+        "Six AI Coach agents (Runway Guard, Debt Strategist, Tax Optimiser, Leak Hunter, Portfolio Doctor, Milestone Planner) that show their reasoning",
+        "Tax Centre running both Indian regimes against real declarations, reporting the break-even deduction level and which statutory HRA limit binds",
+        "Go API with argon2id + JWT auth and a real double-entry ledger — the only service holding a database credential"
       ],
       metrics: [
-        { value: "20x", label: "less cloud overhead" },
-        { value: "<100ms", label: "inference latency" }
+        { value: "10 of 15", label: "walk-forward quarters beating the Nifty 500" },
+        { value: "24.9%", label: "screener annualised return vs 13.4% benchmark" },
+        { value: "8", label: "ML models built, each gated on its own evidence" }
       ],
-      tech: ["LangGraph", "Llama 3.1", "Kafka", "AMD NPU"],
-      link: "https://illustrious-blancmange-d4f8cc.netlify.app/",
+      tech: ["React 19", "TypeScript", "Go", "Python", "PostgreSQL", "Gemini"],
+      link: "https://a-salary-pilot-amd-addition.vercel.app/",
       github: "https://github.com/Aditya-MP/A_Salary_Pilot_-AMD_Addition-",
       cover: "/salary_pilot_cover.webp",
-      year: "Feb 2026"
+      year: "Aug 2026"
     },
     {
       id: 2,
